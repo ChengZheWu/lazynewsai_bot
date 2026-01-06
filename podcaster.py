@@ -7,35 +7,13 @@ import os
 import re
 from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
-import boto3
 import sys
 import argparse
 
 # --- [全域常數] ---
-S3_BUCKET_NAME = 'ai-news-podcast-output-andy-1102'
 BYTE_LIMIT = 15000
 
 # --- [函數定義區] ---
-def setup_gcp_credentials(): # 雖然改用Azure，但這個函數的設計模式很好，保留下來，萬一以後要用
-    gcp_json_content = os.getenv("GCP_CREDENTIALS_JSON")
-    if gcp_json_content:
-        temp_credentials_path = "gcp_credentials_temp.json"
-        with open(temp_credentials_path, "w") as f:
-            f.write(gcp_json_content)
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_credentials_path
-        print("已從環境變數載入 GCP 憑證。")
-
-def upload_to_s3(file_path, bucket_name, object_name):
-    # 與 analyzer.py 中的函數相同
-    s3_client = boto3.client('s3')
-    try:
-        s3_client.upload_file(file_path, bucket_name, object_name)
-        print(f"檔案已成功上傳至 S3: s3://{bucket_name}/{object_name}")
-        return True
-    except Exception as e:
-        print(f"S3 上傳失敗: {e}")
-        return False
-
 def create_text_chunks(text):
     chunks, current_chunk = [], ""
     sentences = text.replace('\n', '。').replace('！', '。').replace('？', '。').split('。')
@@ -101,9 +79,7 @@ def main():
                 return
         
         print("\n所有段落語音合成完畢！")
-        
-        upload_to_s3(filename, S3_BUCKET_NAME, f"{market}_podcasts/{filename}")
-        os.remove(filename)
+        return filename # 回傳給 run_all.py
     except Exception as e:
         print(f"AI 轉podcast或存檔過程中發生錯誤: {e}")
         sys.exit(1) # 使用非 0 的 exit code 代表錯誤

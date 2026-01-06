@@ -1,0 +1,56 @@
+name: Daily Financial News AI
+
+on:
+  schedule:
+    # 00:00 UTC = 08:00 台北時間 (台股)
+    - cron: '0 0 * * *'
+    # 12:00 UTC = 20:00 台北時間 (美股)
+    - cron: '0 12 * * *'
+  workflow_dispatch: # 保留手動觸發按鈕，方便你測試
+
+jobs:
+  financial-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          # 確保有安裝發送 Telegram 用的 requests
+          pip install requests
+
+      # --- 核心邏輯：判斷時間並跑對應市場 ---
+      
+      - name: Run TW Market Task (Taipei 08:00)
+        # 只有在 cron 為 '0 0 * * *' 或手動執行時，可以執行此步
+        if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python run_all.py --market TW
+
+      - name: Run US Market Task (Taipei 20:00)
+        # 只有在 cron 為 '0 12 * * *' 或手動執行時，可以執行此步
+        if: github.event.schedule == '0 12 * * *' || github.event_name == 'workflow_dispatch'
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python run_all.py --market US

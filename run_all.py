@@ -1,45 +1,58 @@
 import subprocess
 import sys
 import argparse
+import analyzer  # 匯入改造後的 analyzer.py
+import podcaster # 匯入改造後的 podcaster.py
+import notifier  # 你新建立的 telegram 工具
 
-# --- [函數定義區] ---
-def run_script(script_name, market):
-    """執行一個 Python 腳本，並檢查是否成功。"""
-    print(f"\n--- 正在執行 {script_name} (市場: {market}) ---")
-    # sys.executable 會確保我們用的是同一個環境下的 python.exe
-    result = subprocess.run([sys.executable, script_name, "--market", market])
+def run_news_hunter(market):
+    """執行爬蟲腳本"""
+    print(f"\n--- 1. 正在執行 News Hunter (市場: {market}) ---")
+    result = subprocess.run([sys.executable, "news_hunter.py", "--market", market])
     if result.returncode != 0:
-        print(f"!!! 執行 {script_name} (市場: {market}) 時發生錯誤，中止任務 !!!")
+        print("❌ 爬蟲失敗，終止任務。")
         return False
-    print(f"--- {script_name} (市場: {market}) 執行成功 ---\n")
     return True
 
 def main():
-    parser = argparse.ArgumentParser(description="執行指定市場的財經 Podcast 自動化流程。")
-    parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'], help="要處理的市場 (TW 或 US)")
+    parser = argparse.ArgumentParser(description="Lazy News AI 自動化流程")
+    parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
     args = parser.parse_args()
-
     market = args.market
-    market_name = "台灣" if market == "TW" else "美國"
+    market_name = "台股" if market == "TW" else "美股"
 
-    print("==============================================")
-    print("      每日財經 Podcast 自動化專案啟動 v9      ")
-    print("==============================================")
-    
-    # 步驟一：執行新聞抓取
-    if not run_script("news_hunter.py", market):
-        return # 如果抓取失敗，就直接結束
+    print(f"======================================")
+    print(f"   🚀 {market_name} 任務啟動 (GitHub Actions) ")
+    print(f"======================================")
 
-    # 步驟二：執行 AI 分析與儲存
-    if not run_script("analyzer.py", market):
-        return # 如果分析失敗，就直接結束
+    # Step 1: 爬蟲 (寫入本地 sqlite)
+    if not run_news_hunter(market):
+        sys.exit(1)
 
-    # 步驟三：執行 Podcast 生成
-    if not run_script("podcaster.py", market):
-        return # 如果生成語音失敗，就直接結束
-    
-    print(f"--- 所有 {market_name} 市場任務執行完畢，專案成功！ ---")
+    # Step 2: AI 分析 (取得 Markdown 檔名)
+    try:
+        print("\n--- 2. 啟動 AI 分析師 ---")
+        md_file = analyzer.main(market=market) # 記得修改 analyzer.py 的 main() 讓他 return 檔名
+    except Exception as e:
+        print(f"❌ AI 分析失敗: {e}")
+        sys.exit(1)
 
-# --- [程式總開關] ---
+    # Step 3: 語音合成 (取得 MP3 檔名)
+    try:
+        print("\n--- 3. 啟動 AI 播音員 ---")
+        mp3_file = podcaster.main(market=market) # 記得修改 podcaster.py 的 main() 讓他 return 檔名
+    except Exception as e:
+        print(f"❌ 語音合成失敗: {e}")
+        sys.exit(1)
+
+    # Step 4: Telegram 推播
+    try:
+        print(f"\n--- 4. 發送至 Telegram ({market_name}) ---")
+        notifier.send_to_telegram(md_file, mp3_file, market_name)
+    except Exception as e:
+        print(f"❌ Telegram 發送失敗: {e}")
+
+    print(f"\n✨ {market_name} 任務順利完成！檔案將在 GitHub Runner 結束後自動清理。")
+
 if __name__ == "__main__":
     main()

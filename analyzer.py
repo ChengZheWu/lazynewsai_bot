@@ -7,24 +7,13 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
 from dotenv import load_dotenv
-import boto3
 import sys
 import argparse
 
 # --- [全域常數] ---
-S3_BUCKET_NAME = 'ai-news-podcast-output-andy-1102'
+
 
 # --- [函數定義區] ---
-def upload_to_s3(file_path, bucket_name, object_name):
-    s3_client = boto3.client('s3')
-    try:
-        s3_client.upload_file(file_path, bucket_name, object_name)
-        print(f"檔案已成功上傳至 S3: s3://{bucket_name}/{object_name}")
-        return True
-    except Exception as e:
-        print(f"S3 上傳失敗: {e}")
-        return False
-
 def main():
     parser = argparse.ArgumentParser(description="分析指定市場的新聞並產生報告。")
     parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
@@ -104,13 +93,11 @@ def main():
         filename = f"summary_{market}_{file_timestamp}.md"
         with open(filename, "w", encoding="utf-8") as f:
             f.write(ai_summary)
-        
-        upload_to_s3(filename, S3_BUCKET_NAME, f"{market}_reports/{filename}")
-        os.remove(filename) # 上傳後刪除本地暫存檔
 
         print("\n\n========== Gemini AI 財經摘要報告 ========== \n")
         print(textwrap.fill(ai_summary.replace('*', ''), width=80))
         print("\n==================== 報告結束 ====================")
+        return filename # 讓 run_all.py 可以拿到檔名
     except Exception as e:
         print(f"AI 分析或存檔過程中發生錯誤: {e}")
         sys.exit(1) # 使用非 0 的 exit code 代表錯誤
