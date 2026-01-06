@@ -1,0 +1,21 @@
+# 忽略 Git 相關檔案
+.git
+.gitignore
+
+# 忽略虛擬環境
+venv/
+/venv/
+
+# 忽略 Python 快取
+__pycache__/
+*.pyc
+
+# 忽略所有祕密檔案！這些將會在雲端環境中注入
+.env
+
+# 忽略資料庫和所有輸出成品
+news.db
+*.db
+
+/info/
+info/
