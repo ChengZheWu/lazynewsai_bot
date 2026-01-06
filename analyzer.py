@@ -14,11 +14,16 @@ import argparse
 
 
 # --- [函數定義區] ---
-def main():
-    parser = argparse.ArgumentParser(description="分析指定市場的新聞並產生報告。")
-    parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
-    args = parser.parse_args()
-    market = args.market
+def main(market=None):
+    # --- [核心邏輯：判斷 market 來源] ---
+    if market is None:
+        # 如果沒有傳入參數 (代表是手動單獨執行：python analyzer.py --market TW)
+        parser = argparse.ArgumentParser(description="分析指定市場的新聞並產生報告。")
+        parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
+        args = parser.parse_args()
+        market = args.market
+    
+    # 接下來的邏輯都使用這個 market 變數
     market_name = "台股" if market == "TW" else "美股"
 
     load_dotenv()

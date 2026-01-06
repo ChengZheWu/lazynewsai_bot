@@ -28,12 +28,17 @@ def create_text_chunks(text):
     if current_chunk: chunks.append(current_chunk)
     return chunks
 
-def main():
-    parser = argparse.ArgumentParser(description="為指定市場的最新報告生成 Podcast。")
-    parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
-    args = parser.parse_args()
-    market = args.market
-    market_name = "台灣" if market == "TW" else "美國"
+def main(market=None):
+    # --- [核心邏輯：判斷 market 來源] ---
+    if market is None:
+        # 如果沒有傳入參數 (代表是手動單獨執行：python analyzer.py --market TW)
+        parser = argparse.ArgumentParser(description="為指定市場的最新報告生成 Podcast。")
+        parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
+        args = parser.parse_args()
+        market = args.market
+    
+    # 接下來的邏輯都使用這個 market 變數
+    market_name = "台股" if market == "TW" else "美股"
 
     load_dotenv()
     

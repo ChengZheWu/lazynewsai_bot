@@ -35,7 +35,7 @@ jobs:
       
       - name: Run TW Market Task (Taipei 08:00)
         # 只有在 cron 為 '0 0 * * *' 或手動執行時，可以執行此步
-        if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '0 0 * * *'
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
