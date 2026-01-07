@@ -2,10 +2,10 @@ name: Daily Financial News AI
 
 on:
   schedule:
-    # 00:00 UTC = 08:00 台北時間 (台股)
-    - cron: '0 0 * * *'
-    # 12:00 UTC = 20:00 台北時間 (美股)
-    - cron: '0 12 * * *'
+    # 00:00 UTC = 07:37 台北時間 (台股)
+    - cron: '37 23 * * *'
+    # 12:00 UTC = 19:37 台北時間 (美股)
+    - cron: '37 11 * * *'
   workflow_dispatch: # 保留手動觸發按鈕，方便你測試
 
 jobs:
@@ -34,8 +34,7 @@ jobs:
       # --- 核心邏輯：判斷時間並跑對應市場 ---
       
       - name: Run TW Market Task (Taipei 08:00)
-        # 只有在 cron 為 '0 0 * * *' 或手動執行時，可以執行此步
-        if: github.event.schedule == '0 0 * * *'
+        if: github.event.schedule == '37 23 * * *'
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
@@ -45,8 +44,7 @@ jobs:
         run: python run_all.py --market TW
 
       - name: Run US Market Task (Taipei 20:00)
-        # 只有在 cron 為 '0 12 * * *' 或手動執行時，可以執行此步
-        if: github.event.schedule == '0 12 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '37 11 * * *' || github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
