@@ -1,65 +1,71 @@
-# Lazy News AI - Daily AI-Automated Financial News Newsletter
+# Lazy News AI - Daily AI-Automated Financial News Telegram Bot
 
-**Lazy News AI** is a fully automated cloud-native system designed for busy investors. The system automatically scrapes massive amounts of financial news for the Taiwan Stock Market (TW) and US Stock Market (US) on a daily schedule. It utilizes Large Language Models (LLM) to perform deep reading and summarization, and leverages Text-to-Speech (TTS) technology to generate audio files. Finally, it packages the concise text report and audio summary into a newsletter, which is automatically delivered to your inbox.
-Stop spending time scrolling through news feeds—let AI organize daily market trends for you, so you can stay on top of the market just by "listening."
+**Lazy News AI** is a cloud-native, fully automated system designed for busy investors. To optimize delivery reliability and reduce maintenance costs, the system has transitioned from traditional newsletters to **Telegram Bot push notifications**.
 
-**Lazy News AI** 是一個全自動化的雲原生系統，專為繁忙的投資人設計。系統每日定時自動抓取台股 (TW) 與美股 (US) 的海量財經新聞，利用大型語言模型 (LLM) 進行深度閱讀與重點摘要，並透過文字轉語音 (TTS) 技術生成語音檔。最終，將精華的文字報告與語音內容打包成一份電子報，自動寄送至您的信箱。
-不用再花時間刷新聞，讓 AI 為您整理每日市場動態，用「聽」的也能掌握股市脈動。
+The system automatically scrapes massive amounts of financial news for both the Taiwan Stock Market (TW) and US Stock Market (US) on a daily schedule. It utilizes **Google Gemini AI** for deep reading and structured summarization, and leverages **Azure TTS** technology to generate audio briefings. Finally, the system publishes the concise report to **Telegraph** (a clean web-based reading page) and pushes the audio file directly to your **Telegram** channel, allowing you to stay on top of the market just by "listening."
+
+Lazy News AI 是一個專為繁忙投資者設計的雲原生全自動化系統。為了優化寄送穩定性並降低維運成本，系統已由傳統的電子報形式轉型為 Telegram 機器人推播。
+
+本系統每日定時自動抓取台股 (TW) 與美股 (US) 的海量財經新聞，利用 Google Gemini AI 進行深度閱讀與結構化摘要，並透過 Azure TTS 技術生成語音導讀。最後，系統會將精華報告發佈至 Telegraph（簡潔的網頁閱讀頁面）並同步推播音檔至您的 Telegram 頻道，讓您隨時隨地用「聽」的也能掌握市場脈動。
 
 ## ✨ Features
 
 * **🌍 Dual Market Monitoring**: Supports parameterized settings to automate news processing for both **Taiwan Stocks (TW)** and **US Stocks (US)** simultaneously.
 * **🧠 AI-Powered Analysis**: Integrates **Google Gemini API** as a virtual analyst to read and filter dozens of real-time news articles, generating unique, structured market summary reports.
-* **📧 Automated Newsletter**: Integrates **n8n** automated workflows to package the AI-generated text report and audio file, delivering them punctually to subscribers via email every day.
-* **🗣️ Audio Generation**: Integrates **Azure AI Speech** services to convert text reports into natural-sounding MP3 audio guides, perfect for listening during commutes or spare time.
-* **☁️ Serverless Architecture**: The core computation is deployed on **AWS Fargate**, utilizing a serverless architecture that launches on demand, achieving low cost and high efficiency.
-* **⏰ Precision Scheduling**: Uses **Amazon EventBridge Scheduler** to set Cron schedules, automatically triggering tasks based on specific time zones (Asia/Taipei).
-* **🛡️ Reliability & Monitoring**: Integrates **Amazon CloudWatch** for log monitoring and includes retry mechanisms at the crawler and API layers to ensure stable system operation.
+* **📢 Instant Telegram Delivery**: Replaces traditional email limits with a Telegram Bot. It uses **Telegraph** to generate aesthetic web links for quick reading on mobile devices.
+* **🗣️ Audio Generation**: Integrates **Azure AI Speech** services to convert text reports into natural-sounding MP3 audio guides, perfect for listening during commutes.
+* **☁️ Serverless & Zero Cost**: Runs entirely on **GitHub Actions** with Cron scheduling, achieving full automation without the need for paid server hosting.
+* **🛡️ Reliability**: Features "Smart Scrolling" and multiple retry mechanisms to ensure stable web scraping even with dynamic content.
 
 ## 🚀 How It Works
 
-1. **News Hunter**: Launches a headless browser via Selenium to crawl the latest financial news from sources like Yahoo Finance and performs precise time filtering.
-2. **AI Analyzer**: Sends the filtered news to the Google Gemini model, requesting a structured financial analysis report (including market overview, sector focus, and key company updates).
-3. **Podcaster**: Converts the generated text report into an audio file (MP3) using Azure TTS.
-4. **Delivery**: Uploads the final Markdown report and MP3 to AWS S3 and triggers the n8n workflow to send the newsletter.
+1. **News Hunter**: Launches a headless browser via Selenium to crawl the latest financial news from Yahoo Finance and performs precise time filtering.
+2. **AI Analyzer**: Sends the filtered news to the Google Gemini model to generate a report covering market overviews, sector focus, key company updates, and future outlooks.
+3. **Podcaster**: Converts the generated text report into an MP3 audio file using Azure TTS.
+4. **Telegram Notifier**:
+* Converts Markdown content to HTML and publishes it as a Telegraph page.
+* Sends the reading link and the MP3 file to a designated Telegram channel via the Bot API.
+
+
 
 ## 🛠️ Tech Stack
 
 | Category | Technology |
 | --- | --- |
-| **Core** | Python |
-| **Web Scraper** | Selenium, BeautifulSoup, requests |
-| **Database** | SQLite (RDBMS) |
-| **Local Dev** | Python venv |
-| **Containerization** | Docker |
-| **Cloud (AWS)** | ECR, ECS Fargate (Serverless), EventBridge, IAM, SNS, CloudWatch, S3, Boto3 |
-| **AI** | Google Gemini API (Analysis), Azure AI Speech (TTS), AI-Assisted Dev |
-| **Automation** | n8n |
-| **Version Control** | Git |
+| **Core** | Python 3.11 |
+| **Web Scraper** | Selenium (Headless Chrome), BeautifulSoup4 |
+| **Database** | SQLite (for news deduplication and caching) |
+| **AI Services** | Google Gemini API (Analysis), Azure AI Speech (TTS) |
+| **Automation** | GitHub Actions |
+| **Messaging** | Telegram Bot API, Telegraph |
 
-## ⚙️ Quick Start (Local Development)
+## ⚙️ Quick Start
 
-To run this project locally:
+### 1. Environment Setup
 
-1. **Environment Setup**
-Create a `.env` file and fill in the necessary keys:
+Create a `.env` file in the root directory and fill in the necessary keys:
+
 ```env
+# AI Services
 GOOGLE_API_KEY=your_gemini_key
 AZURE_SPEECH_KEY=your_azure_key
 AZURE_SPEECH_REGION=your_azure_region
-# AWS credentials can be omitted if configured in ~/.aws/credentials
+
+# Telegram
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_or_channel_id
 
 ```
 
+### 2. Install Dependencies
 
-2. **Install Dependencies**
 ```bash
 pip install -r requirements.txt
 
 ```
 
+### 3. Run Locally
 
-3. **Run Tasks**
 ```bash
 # Run task for Taiwan Stock Market
 python run_all.py --market TW
@@ -69,9 +75,13 @@ python run_all.py --market US
 
 ```
 
+## ⏰ Scheduling
 
+The system is currently configured to run automatically via GitHub Actions:
 
-## 📈 Future Improvements
+* **TW Market**: Daily at 08:00 AM (Taipei Time).
+* **US Market**: Daily at 20:00 PM (Taipei Time).
 
-* [ ] **Web Frontend**: Build a simple web interface to showcase historical newsletter archives and allow online podcast streaming.
-* [ ] **Advanced AI Applications**: Experiment with different LLM models or add features like Sentiment Analysis and Named Entity Recognition (NER) to enrich the newsletter content.
+---
+
+*Disclaimer: All content is AI-generated for informational purposes only and does not constitute financial or investment advice.*
