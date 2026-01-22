@@ -35,7 +35,7 @@ def main(market=None):
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-flash-latest')
+        model = genai.GenerativeModel('gemini-3-flash-preview')
     except Exception as e:
         print(f"AI 設定失敗: {e}")
         sys.exit(1) # 使用非 0 的 exit code 代表錯誤
