@@ -108,7 +108,6 @@ def clear_all_data(market):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     try:
-        # 使用 DELETE FROM 會清空表格內容，但保留表格結構
         cursor.execute("DELETE FROM articles WHERE market = ?", (market,))
         cursor.execute("DELETE FROM summaries WHERE market = ?", (market,))
         conn.commit()
@@ -117,3 +116,47 @@ def clear_all_data(market):
         print(f"清空資料庫時發生錯誤: {e}")
     finally:
         conn.close()
+
+def clear_articles(market):
+    """報告生成後清空文章，但保留 summaries。"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM articles WHERE market = ?", (market,))
+        conn.commit()
+        print(f"市場 {market} 的文章已清空。")
+    except sqlite3.Error as e:
+        print(f"清空文章時發生錯誤: {e}")
+    finally:
+        conn.close()
+
+def delete_old_summaries(market):
+    """刪除兩週前的 summaries，只保留最近 14 天。"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "DELETE FROM summaries WHERE market = ? AND created_at < datetime('now', '-14 days')",
+            (market,)
+        )
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted > 0:
+            print(f"已刪除市場 {market} 兩週前的 {deleted} 筆舊摘要。")
+    except sqlite3.Error as e:
+        print(f"刪除舊摘要時發生錯誤: {e}")
+    finally:
+        conn.close()
+
+def get_summaries_for_weekly_report(market):
+    """讀取最近 14 天的 summaries，附帶 created_at 供加權使用。"""
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM summaries WHERE market = ? AND created_at >= datetime('now', '-14 days') ORDER BY created_at DESC",
+        (market,)
+    )
+    summaries = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return summaries

@@ -93,9 +93,8 @@ def main():
     market = args.market
     config = MARKET_CONFIG[market]
 
-    # 確保資料庫結構存在並清空舊資料
+    # 確保資料庫結構存在
     database.setup_database()
-    database.clear_all_data(market)
 
     # 在程式一開始，就定義一個統一的、帶有時區的「現在時間」基準點
     now_utc = datetime.now(timezone.utc)

@@ -28,43 +28,23 @@ def create_text_chunks(text):
     if current_chunk: chunks.append(current_chunk)
     return chunks
 
-def main(market=None):
-    # --- [核心邏輯：判斷 market 來源] ---
-    if market is None:
-        # 如果沒有傳入參數 (代表是手動單獨執行：python analyzer.py --market TW)
-        parser = argparse.ArgumentParser(description="為指定市場的最新報告生成 Podcast。")
-        parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
-        args = parser.parse_args()
-        market = args.market
-    
-    # 接下來的邏輯都使用這個 market 變數
-    market_name = "台股" if market == "TW" else "美股"
-
+def synthesize_from_text(text, market, filename=None):
+    """將文字合成為 MP3，回傳檔名。可供 main() 和 weekly_report.py 共用。"""
     load_dotenv()
-    
-    print(f"--- AI 播音員 ({market_name}市場版) 啟動 ---")
-    latest_summary = database.get_latest_summary(market)
-    if not latest_summary:
-        print(f"錯誤：資料庫中找不到任何 {market_name} 市場的分析報告。")
-        sys.exit(1) # 使用非 0 的 exit code 代表錯誤
-        return
-    summary_text = latest_summary['summary_text']
-    print("成功讀取報告，準備進行語音合成...")
-
-    cleaned_text = re.sub(r'#+\s*', '', summary_text).replace('**', '').replace('*', '').replace('---', '').replace('/', '、')
-
     speech_key = os.getenv("AZURE_SPEECH_KEY")
     speech_region = os.getenv("AZURE_SPEECH_REGION")
     if not all([speech_key, speech_region]):
         print("錯誤：缺少 AZURE_SPEECH_KEY 或 AZURE_SPEECH_REGION 環境變數。")
-        sys.exit(1) # 使用非 0 的 exit code 代表錯誤
-        return
+        return None
 
-    try:
+    cleaned_text = re.sub(r'#+\s*', '', text).replace('**', '').replace('*', '').replace('---', '').replace('/', '、')
+
+    if filename is None:
         tz_taipei = ZoneInfo("Asia/Taipei")
         file_timestamp = datetime.now(tz_taipei).strftime('%Y%m%d_%H')
         filename = f"podcast_{market}_{file_timestamp}.mp3"
-        
+
+    try:
         speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=speech_region)
         audio_config = speechsdk.audio.AudioOutputConfig(filename=filename)
         voice_name = "zh-TW-YunJheNeural"
@@ -81,13 +61,37 @@ def main(market=None):
                 print(f"語音合成被取消: {cancellation_details.reason}")
                 if cancellation_details.reason == speechsdk.CancellationReason.Error:
                     print(f"錯誤詳情: {cancellation_details.error_details}")
-                return
-        
+                return None
+
         print("\n所有段落語音合成完畢！")
-        return filename # 回傳給 run_all.py
+        return filename
     except Exception as e:
-        print(f"AI 轉podcast或存檔過程中發生錯誤: {e}")
-        sys.exit(1) # 使用非 0 的 exit code 代表錯誤
+        print(f"語音合成過程中發生錯誤: {e}")
+        return None
+
+
+def main(market=None):
+    if market is None:
+        parser = argparse.ArgumentParser(description="為指定市場的最新報告生成 Podcast。")
+        parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
+        args = parser.parse_args()
+        market = args.market
+
+    market_name = "台股" if market == "TW" else "美股"
+    load_dotenv()
+
+    print(f"--- AI 播音員 ({market_name}市場版) 啟動 ---")
+    latest_summary = database.get_latest_summary(market)
+    if not latest_summary:
+        print(f"錯誤：資料庫中找不到任何 {market_name} 市場的分析報告。")
+        sys.exit(1)
+        return
+
+    print("成功讀取報告，準備進行語音合成...")
+    filename = synthesize_from_text(latest_summary['summary_text'], market)
+    if not filename:
+        sys.exit(1)
+    return filename
 
 # --- [程式總開關] ---
 if __name__ == "__main__":

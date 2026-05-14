@@ -1,9 +1,10 @@
 import subprocess
 import sys
 import argparse
-import analyzer  # 匯入改造後的 analyzer.py
-import podcaster # 匯入改造後的 podcaster.py
-import notifier  # 你新建立的 telegram 工具
+import analyzer
+import podcaster
+import notifier
+import database
 
 def run_news_hunter(market):
     """執行爬蟲腳本"""
@@ -17,30 +18,39 @@ def run_news_hunter(market):
 def main():
     parser = argparse.ArgumentParser(description="Lazy News AI 自動化流程")
     parser.add_argument("--market", type=str, required=True, choices=['TW', 'US'])
+    parser.add_argument("--mode", type=str, required=True, choices=['crawl_only', 'crawl_and_report'],
+                        help="crawl_only: 只爬蟲存入DB / crawl_and_report: 爬蟲+分析+推播+清空文章")
     args = parser.parse_args()
     market = args.market
+    mode = args.mode
     market_name = "台股" if market == "TW" else "美股"
 
     print(f"======================================")
-    print(f"   🚀 {market_name} 任務啟動 (GitHub Actions) ")
+    print(f"   🚀 {market_name} 任務啟動 (模式: {mode})")
     print(f"======================================")
 
-    # Step 1: 爬蟲 (寫入本地 sqlite)
+    # Step 1: 爬蟲（兩種模式都要執行）
     if not run_news_hunter(market):
         sys.exit(1)
 
-    # Step 2: AI 分析 (取得 Markdown 檔名)
+    if mode == 'crawl_only':
+        print(f"\n✅ {market_name} 爬蟲完成，新聞已存入資料庫，等待下次分析。")
+        return
+
+    # 以下只有 crawl_and_report 模式才執行
+
+    # Step 2: AI 分析
     try:
         print("\n--- 2. 啟動 AI 分析師 ---")
-        md_file = analyzer.main(market=market) # 記得修改 analyzer.py 的 main() 讓他 return 檔名
+        md_file = analyzer.main(market=market)
     except Exception as e:
         print(f"❌ AI 分析失敗: {e}")
         sys.exit(1)
 
-    # Step 3: 語音合成 (取得 MP3 檔名)
+    # Step 3: 語音合成
     try:
         print("\n--- 3. 啟動 AI 播音員 ---")
-        mp3_file = podcaster.main(market=market) # 記得修改 podcaster.py 的 main() 讓他 return 檔名
+        mp3_file = podcaster.main(market=market)
     except Exception as e:
         print(f"❌ 語音合成失敗: {e}")
         sys.exit(1)
@@ -52,7 +62,12 @@ def main():
     except Exception as e:
         print(f"❌ Telegram 發送失敗: {e}")
 
-    print(f"\n✨ {market_name} 任務順利完成！檔案將在 GitHub Runner 結束後自動清理。")
+    # Step 5: 清空文章、刪除兩週前舊摘要
+    print(f"\n--- 5. 清理資料庫 ---")
+    database.clear_articles(market)
+    database.delete_old_summaries(market)
+
+    print(f"\n✨ {market_name} 任務順利完成！")
 
 if __name__ == "__main__":
     main()
