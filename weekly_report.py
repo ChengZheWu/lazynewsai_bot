@@ -120,7 +120,7 @@ def main(market=None):
 
         # 語音合成（直接從檔案讀取，複用 podcaster 邏輯）
         print("\n--- 啟動 AI 播音員（週報）---")
-        mp3_filename = podcaster.synthesize_from_text(weekly_summary, market)
+        mp3_filename = podcaster.synthesize_from_text(weekly_summary, market, filename=f"weekly_podcast_{market}_{file_timestamp}.mp3")
         if not mp3_filename:
             print("❌ 語音合成失敗，跳過推播。")
             return
@@ -129,14 +129,12 @@ def main(market=None):
         weekly_market_name = f"{market_name}週報"
         notifier.send_to_telegram(md_filename, mp3_filename, weekly_market_name)
 
-        # 刪除 MD、MP3，清空所有每日摘要
+        # 刪除 MD、MP3，刪除上週摘要（保留當週）
         for f in [md_filename, mp3_filename]:
             if f and os.path.exists(f):
                 os.remove(f)
                 print(f"已刪除 {f}")
-        database.clear_summaries(market)
-
-        return md_filename
+        database.delete_last_week_summaries(market)
     except Exception as e:
         print(f"週報生成過程中發生錯誤: {e}")
         sys.exit(1)

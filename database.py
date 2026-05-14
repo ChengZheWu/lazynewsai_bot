@@ -103,19 +103,6 @@ def get_latest_summary(market):
         return dict(latest_summary)
     return None
 
-def clear_all_data(market):
-    """清空 articles 和 summaries 表格中的所有資料，為下一次運行做準備。"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM articles WHERE market = ?", (market,))
-        cursor.execute("DELETE FROM summaries WHERE market = ?", (market,))
-        conn.commit()
-        print(f"資料庫 '{DB_FILE}' 已清空，準備接收新情報。")
-    except sqlite3.Error as e:
-        print(f"清空資料庫時發生錯誤: {e}")
-    finally:
-        conn.close()
 
 def clear_articles(market):
     """報告生成後清空文章，但保留 summaries。"""
@@ -130,17 +117,21 @@ def clear_articles(market):
     finally:
         conn.close()
 
-def clear_summaries(market):
-    """週報生成後清空所有每日摘要。"""
+def delete_last_week_summaries(market):
+    """週報生成後刪除 7 天前的摘要，保留當週供下週使用。"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM summaries WHERE market = ?", (market,))
+        cursor.execute(
+            "DELETE FROM summaries WHERE market = ? AND created_at < datetime('now', '-7 days')",
+            (market,)
+        )
         deleted = cursor.rowcount
         conn.commit()
-        print(f"已清空市場 {market} 的 {deleted} 筆每日摘要。")
+        if deleted > 0:
+            print(f"已刪除市場 {market} 上週的 {deleted} 筆摘要。")
     except sqlite3.Error as e:
-        print(f"清空摘要時發生錯誤: {e}")
+        print(f"刪除上週摘要時發生錯誤: {e}")
     finally:
         conn.close()
 
