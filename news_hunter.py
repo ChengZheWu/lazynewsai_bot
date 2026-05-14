@@ -12,7 +12,7 @@ import sys # 導入 sys 模組來終止程式
 import argparse
 
 # --- [全域常數] ---
-HOURS_TO_FETCH = 24
+HOURS_TO_FETCH = 12
 SCROLLING_MAX_RETRIES = 3 # 滾動失敗時，最多重試幾次
 RETRY_DELAY_SECONDS = 60
 
@@ -203,7 +203,7 @@ def main():
                         print(f"滾動失敗：已達頁面底部，但條件不滿足 (文章數: {article_count}/20, 時間跨度: {time_span_hours:.2f}/{HOURS_TO_FETCH // 2} 小時)。")
                         # scrolling_successful 保持為 False
                     else:
-                        print(f"滾動成功：雖未達12小時，但文章數({article_count})及時間跨度({time_span_hours:.2f}小時)滿足最低要求，視為正常。")
+                        print(f"滾動成功：雖未達{HOURS_TO_FETCH}小時，但文章數({article_count})及時間跨度({time_span_hours:.2f}小時)滿足最低要求，視為正常。")
                         scrolling_successful = True # 滿足條件，視為成功
                     
                     break # 無論判斷結果如何，都結束滾
@@ -269,14 +269,10 @@ def main():
             if database.add_article(article_data, market):
                 new_articles_count += 1
 
-    if new_articles_count <= 1:
-        print(f"[FATAL ERROR] 抓取新聞可能有問題，參考新聞只有{new_articles_count}篇。")
-        sys.exit(1) # 使用非 0 的 exit code 代表錯誤
-    
     print("\n--- 任務報告 ---")
-    if new_articles_count == 0:
-        print(f"[FATAL ERROR] 處理了 {len(news_to_process)} 個目標，但沒有任何一篇符合條件或為新文章。可能出現問題，程式終止。")
-        sys.exit(1) # 使用非 0 的 exit code 代表錯誤
+    if new_articles_count <= 1:
+        print(f"[FATAL ERROR] 抓取新聞可能有問題，參考新聞只有 {new_articles_count} 篇，程式終止。")
+        sys.exit(1)
     print(f"✔️ 本次新增 {new_articles_count} 篇符合精準時間的新文章到知識庫。")
 
 # --- [程式總開關] ---

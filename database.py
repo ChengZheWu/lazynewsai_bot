@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # --- [全域常數] ---
 DB_FILE = "news.db"

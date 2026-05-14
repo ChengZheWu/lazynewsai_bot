@@ -90,7 +90,6 @@ def main(market=None):
         print("\n分析完成，正在將報告存入知識庫...")
         database.add_summary(ai_summary, len(articles), market)
         
-        # 產出 .md 檔案並上傳到 S3
         tz_taipei = ZoneInfo("Asia/Taipei")
         file_timestamp = datetime.now(tz_taipei).strftime('%Y%m%d_%H')
         filename = f"summary_{market}_{file_timestamp}.md"

@@ -1,8 +1,8 @@
 #!/bin/bash
 # 執行前請先修改 PROJECT_DIR 為你的實際專案路徑
-# 例如：PROJECT_DIR="/home/ubuntu/lazynewsai_bot"
+# 例如：PROJECT_DIR="/root/lazynewsai_bot"
 
-PROJECT_DIR="/home/ubuntu/lazynewsai_bot"
+PROJECT_DIR="/root/lazynewsai_bot"
 PYTHON="/usr/bin/python3"
 LOG_DIR="$PROJECT_DIR/logs"
 

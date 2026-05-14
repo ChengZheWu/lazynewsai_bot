@@ -12,10 +12,9 @@ import sys
 import argparse
 
 THIS_WEEK_DAYS = 7
-LAST_WEEK_DAYS = 14
 
 
-def build_weighted_content(summaries, market_name):
+def build_weighted_content(summaries):
     """
     將兩週摘要依照時間分為當週(權重3)與前一週(權重2)，
     組成給 Gemini 的內容區塊。
@@ -72,7 +71,7 @@ def main(market=None):
         print(f"資料庫中沒有 {market_name} 的每日摘要可供生成週報。")
         sys.exit(1)
 
-    weighted_content, this_week_count, last_week_count = build_weighted_content(summaries, market_name)
+    weighted_content, this_week_count, last_week_count = build_weighted_content(summaries)
     print(f"當週摘要: {this_week_count} 篇，前一週摘要: {last_week_count} 篇（3:2 加權）")
 
     prompt = f"""
