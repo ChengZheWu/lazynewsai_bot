@@ -129,6 +129,13 @@ def main(market=None):
         weekly_market_name = f"{market_name}週報"
         notifier.send_to_telegram(md_filename, mp3_filename, weekly_market_name)
 
+        # 刪除 MD、MP3，清空所有每日摘要
+        for f in [md_filename, mp3_filename]:
+            if f and os.path.exists(f):
+                os.remove(f)
+                print(f"已刪除 {f}")
+        database.clear_summaries(market)
+
         return md_filename
     except Exception as e:
         print(f"週報生成過程中發生錯誤: {e}")

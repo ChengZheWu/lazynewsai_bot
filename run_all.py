@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import argparse
+import os
 import analyzer
 import podcaster
 import notifier
@@ -62,10 +63,13 @@ def main():
     except Exception as e:
         print(f"❌ Telegram 發送失敗: {e}")
 
-    # Step 5: 清空文章、刪除兩週前舊摘要
-    print(f"\n--- 5. 清理資料庫 ---")
+    # Step 5: 清空文章、刪除 MD 與 MP3
+    print(f"\n--- 5. 清理檔案與資料庫 ---")
     database.clear_articles(market)
-    database.delete_old_summaries(market)
+    for f in [md_file, mp3_file]:
+        if f and os.path.exists(f):
+            os.remove(f)
+            print(f"已刪除 {f}")
 
     print(f"\n✨ {market_name} 任務順利完成！")
 
