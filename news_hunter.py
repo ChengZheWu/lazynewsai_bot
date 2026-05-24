@@ -264,7 +264,8 @@ def main():
                 "content": content
             }
             formatted_time = article_data['datetime'].strftime('%Y-%m-%d %H:%M')
-            print(f"Time:{formatted_time}\nheadline:{article_data['headline']}")
+            content_preview = content[:20].replace('\n', ' ')
+            print(f"Time:{formatted_time}\nheadline:{article_data['headline']}\ncontent:{content_preview}")
 
             if database.add_article(article_data, market):
                 new_articles_count += 1
