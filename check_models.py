@@ -13,7 +13,7 @@ if not api_key:
   print("錯誤：找不到 GOOGLE_API_KEY。請確認你的專案底下有 .env 檔案，並且裡面有 GOOGLE_API_KEY='...' 的設定。")
 
 try:
-    genai.configure(api_key=GOOGLE_API_KEY)
+    genai.configure(api_key=api_key)
     
     print("成功連線到 Google AI，正在查詢可用的模型...\n")
     print("--- 您可用的模型列表 (支援 generateContent) ---")
