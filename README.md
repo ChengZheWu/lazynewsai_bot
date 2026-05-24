@@ -8,7 +8,7 @@ Lazy News AI 是一個專為繁忙投資者設計的全自動化系統，運行�
 
 * **🌍 Dual Market Coverage**: Automated news processing for both **Taiwan Stocks (TW)** and **US Stocks (US)**.
 * **📥 Two-Phase Crawling**: Crawls news in two batches per day to maximize coverage — first batch is stored, second batch merges with the first before analysis, preventing data loss from page auto-cleanup.
-* **🧠 AI-Powered Daily Report**: Integrates **Google Gemini AI** (`gemini-3.1-flash-lite`) to generate structured daily reports covering sector focus, key company updates, and market analysis.
+* **🧠 AI-Powered Daily Report**: Integrates **Google Gemini AI** (`gemini-2.5-flash`) to generate structured daily reports covering sector focus, key company updates, and market analysis.
 * **📅 Weekly Outlook Report**: Every Sunday, generates a weekly trend report using the past two weeks of daily summaries with a **3:2 weighting** (current week weighted higher). Focuses on emerging industries and future outlook.
 * **📢 Telegram Delivery**: Uses **Telegraph** to generate clean web reading pages and pushes both the article link and MP3 audio file to a Telegram channel.
 * **🗣️ Audio Generation**: Integrates **Azure AI Speech** to convert reports into natural MP3 audio guides.
@@ -51,7 +51,7 @@ Lazy News AI 是一個專為繁忙投資者設計的全自動化系統，運行�
 | **Core** | Python 3.11 |
 | **Web Scraper** | Selenium (Headless Chrome), BeautifulSoup4 |
 | **Database** | SQLite (news deduplication, 14-day summary retention) |
-| **AI Services** | Google Gemini API `gemini-3.1-flash-lite` (Analysis), Azure AI Speech (TTS) |
+| **AI Services** | Google Gemini API `gemini-2.5-flash` (Analysis), Azure AI Speech (TTS) |
 | **Automation** | Linux cron (self-hosted server) |
 | **Messaging** | Telegram Bot API, Telegraph |
 
@@ -85,16 +85,16 @@ pip install -r requirements.txt
 
 ```bash
 # 只爬蟲存入 DB（第一次）
-python run_all.py --market TW --mode crawl_only
-python run_all.py --market US --mode crawl_only
+python3 run_all.py --market TW --mode crawl_only
+python3 run_all.py --market US --mode crawl_only
 
 # 爬蟲 + 分析 + 推播（第二次）
-python run_all.py --market TW --mode crawl_and_report
-python run_all.py --market US --mode crawl_and_report
+python3 run_all.py --market TW --mode crawl_and_report
+python3 run_all.py --market US --mode crawl_and_report
 
 # 生成週報
-python weekly_report.py --market TW
-python weekly_report.py --market US
+python3 weekly_report.py --market TW
+python3 weekly_report.py --market US
 ```
 
 ### 4. Setup Cron (Linux Server)
