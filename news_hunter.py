@@ -70,9 +70,13 @@ def scrape_article_details(url):
             publish_time = datetime.fromisoformat(iso_timestamp.replace('Z', '+00:00'))
 
         # 抓取內文
+        NOISE_KEYWORDS = ['Google 偏好來源', 'Yahoo', '加入為', '隱私權政策', '服務條款']
         article_body = soup.select_one('article')
         if article_body:
-            paragraphs = [p.text for p in article_body.find_all('p')]
+            paragraphs = [
+                p.text for p in article_body.find_all('p')
+                if len(p.text.strip()) > 10 and not any(kw in p.text for kw in NOISE_KEYWORDS)
+            ]
             content = "\n".join(paragraphs)
 
         # 只要有一項沒抓到，就視為失敗
